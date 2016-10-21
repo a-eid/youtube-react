@@ -1,30 +1,65 @@
-import React from 'react'
+import React , {Component} from 'react'
 import {render} from 'react-dom'
-import SearchBar from './components/search-bar'
 import YoutubeSearch from 'youtube-api-search'
+
+/* Components  */
+import SearchBar from './components/search-bar'
+import VideoList from './components/video-list'
+import VideoDetail from './components/video-detail'
+
+
 // youtube data api v3 
 const YOUTUBE_API_KEY = "AIzaSyCA5CKQL0ywFGSmL2JVMCx3hi045evmEbs"
 // youtube-api-search 
 // youtbe-api-search(apikey , searchterm) : data 
-
-YoutubeSearch({
-	key:YOUTUBE_API_KEY , 
-	term : 'reactjs' , 
-	function(data){
-		console.log(data) // returns an array with 5 obj containing videos .. 
+class App extends Component{
+	constructor(){
+		super()
+		this.state = {	
+			videos : [],
+		}
+		this.search();
 	}
-})
 
+	search(term){
+		if(term){
+			YoutubeSearch({ key: YOUTUBE_API_KEY ,term : term } , (videos)=>{
+				this.setState({
+					videos : videos
+				})
+				this.setState({
+					selected : this.state.videos[0]
+				})
+			});
+		}
+	}
 
+	handleChangeSelected(id){
+		let selected = this.state.videos.find((v)=>{				
+			return v.id.videoId == id 
+		})
+		this.setState({selected});
+		window.scrollTo(0, 0);
+	}
 
+	handleSearch(term){
+		this.setState({
+			term
+		})
+		this.search(term);
+	}
 
-const App = (props)=>{
-	return(
-		<div>
-			<h1>React App</h1>
-			<SearchBar />
-		</div>
-		)
+	render(){
+		return(
+				<div>
+					<h2>Youtube React Search</h2>
+					<SearchBar onSearch={this.handleSearch.bind(this)} />
+					<VideoDetail video={this.state.selected} />
+					<VideoList videos={this.state.videos} changeSelected={this.handleChangeSelected.bind(this)} />
+				</div>
+
+			)
+	}
 }
 
 render(<App /> , document.getElementById('app'));
